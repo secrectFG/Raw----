@@ -7,10 +7,17 @@ import ffmpeg
 # import concurrent.futures
 # import time
 
-src_folder = r'Z:\视频&照片\2017'
+src_folder = r'Z:\视频&照片\2020'
 # dest_folder = r'Z:\视频&照片\2014及以前'
 dest_folder = src_folder
 unsort_folder = r'Z:\视频&照片未整理'
+
+def count_files_in_folder(folder_path):
+    total_files = 0
+    for root, dirs, files in os.walk(folder_path):
+        total_files += len(files)  # 每次循环累加文件数
+
+    return total_files
 
 def get_photo_date(photo_path):
     """读取照片的拍摄日期（如果有EXIF信息）"""
@@ -44,13 +51,11 @@ def get_file_creation_date(file_path):
     timestamp = os.path.getmtime(file_path)
     return datetime.fromtimestamp(timestamp)
 
-def organize_media_by_date(src_folder, dest_folder):
+def organize_media_by_date(src_folder, dest_folder, total_file_count):
     """根据文件的日期（拍摄或创建日期）整理文件到目标文件夹"""
     if not os.path.exists(dest_folder):
         os.makedirs(dest_folder)
-    # futures = []
-    # max_workers = 2
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+
     for root, _, files in os.walk(src_folder):
         for file in files:
             file_path = os.path.join(root, file)
@@ -61,23 +66,11 @@ def organize_media_by_date(src_folder, dest_folder):
             #从文件路径获取日期
             file_date = os.path.basename(root)
 
-            if file_date < '2017-02-15':
-                continue
+            # if file_date < '2017-02-15':
+            #     continue
 
-            move_photo(file, file_path)
-                # 提交任务
-        #         future = executor.submit(move_photo, file, file_path)
-        #         futures.append(future)
+            move_photo(file, file_path, total_file_count)
 
-        #         # 控制并发数量
-        #         if len(futures) >= max_workers:
-        #             # 等待第一个完成的任务
-        #             done, _ = concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_COMPLETED)
-        #             # 移除已完成的任务
-        #             futures = [f for f in futures if f not in done]
-
-        # # 等待所有任务完成
-        # concurrent.futures.wait(futures)
             
 def move_file_auto_rename(file_path, target_folder):
     file = os.path.basename(file_path)  # 获取文件名（包括扩展名）
@@ -100,10 +93,13 @@ def move_file_auto_rename(file_path, target_folder):
         shutil.move(file_path, target_path)
         print(f"文件已移动: {target_path}")
 
+count = 0
 
-def move_photo(file, file_path):
+def move_photo(file, file_path, total_file_count):
     date_taken = None
     is_target = False
+    global count
+    count += 1
 
     # 判断文件是否为照片
     if file.lower().endswith(('.jpg', '.jpeg', '.cr2', '.nef', '.raw', '.arw', '.tif', '.rw2')):
@@ -123,7 +119,7 @@ def move_photo(file, file_path):
 
         #判断是否在同一个文件夹
         if os.path.dirname(file_path) == target_folder or target_folder in file_path:
-            content = f"文件已在目标文件夹中: {file_path}"
+            content = f"文件已在目标文件夹中: {file_path} count: {count} progress: {count/total_file_count*100:.2f}%"
             print(f"\r{content:<100}", end="\r")
             return 
         try:
@@ -156,7 +152,10 @@ def move_photo(file, file_path):
 
 def main():
     print('开始')
-    organize_media_by_date(src_folder, dest_folder)
+    total_file_count = count_files_in_folder(src_folder)
+    print(f"总文件数: {total_file_count}")
+    organize_media_by_date(src_folder, dest_folder, total_file_count)
+    print()
     print("完成")
 
 if __name__ == "__main__":
