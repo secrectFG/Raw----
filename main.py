@@ -61,7 +61,7 @@ def organize_media_by_date(src_folder, dest_folder):
             #从文件路径获取日期
             file_date = os.path.basename(root)
 
-            if file_date < '2017-02-06':
+            if file_date < '2017-02-15':
                 continue
 
             move_photo(file, file_path)
@@ -79,7 +79,26 @@ def organize_media_by_date(src_folder, dest_folder):
         # # 等待所有任务完成
         # concurrent.futures.wait(futures)
             
-            
+def move_file_auto_rename(file_path, target_folder):
+    file = os.path.basename(file_path)  # 获取文件名（包括扩展名）
+    target_path = os.path.join(target_folder, file)
+    
+    # 检查文件是否已经存在
+    if os.path.exists(target_path):
+        # 分离文件名和扩展名
+        file_name, file_extension = os.path.splitext(file)
+        
+        # 创建新文件名，避免覆盖已存在的文件
+        new_file_name = file_name + '_1' + file_extension  # 在文件名后加上 '_1'
+        new_file_path = os.path.join(target_folder, new_file_name)
+        
+        # 移动并重命名文件
+        shutil.move(file_path, new_file_path)
+        print(f"文件已存在，重命名并移动: {new_file_path}")
+    else:
+        # 如果文件不存在，直接移动
+        shutil.move(file_path, target_path)
+        print(f"文件已移动: {target_path}")
 
 
 def move_photo(file, file_path):
@@ -105,7 +124,7 @@ def move_photo(file, file_path):
         #判断是否在同一个文件夹
         if os.path.dirname(file_path) == target_folder or target_folder in file_path:
             content = f"文件已在目标文件夹中: {file_path}"
-            print(f"\r{content:<150}", end="\r")
+            print(f"\r{content:<100}", end="\r")
             return 
         try:
             if not os.path.exists(target_folder):
@@ -113,13 +132,8 @@ def move_photo(file, file_path):
             shutil.move(file_path, target_folder)
         except:
             #如果文件已存在，重命名
-            if os.path.exists(os.path.join(target_folder, file)):
-                new_file_path = os.path.join(target_folder, file + '_1')
-                shutil.move(file_path, new_file_path)
-                print(f"文件已存在，重命名并移动: {new_file_path}")
-            else:
-                print(f"文件已存在，移动失败: {file_path}")
-                return
+            move_file_auto_rename(file_path, target_folder)
+            return
             
 
         file_path_no_ext = os.path.splitext(file_path)[0]

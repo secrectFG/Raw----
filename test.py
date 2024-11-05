@@ -19,6 +19,11 @@ def print_progress_bar(iteration, total, prefix='', length=40, fill='█'):
     print(f'\r{prefix} |{bar}| {percent}% 完成', end='\r')
 
 print('开始任务')
+print(f'\r1', end='\r')
+print(f'\r2', end='\r')
+print('test')
+print(f'\r2', end='\r')
+print(f'\r3', end='\r')
 # 示例: 打印进度条
 total = 100
 for i in range(total):
