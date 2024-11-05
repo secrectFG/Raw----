@@ -7,7 +7,7 @@ import ffmpeg
 # import concurrent.futures
 # import time
 
-src_folder = r'Z:\视频&照片\2020'
+src_folder = r'Z:\视频&照片\2022'
 # dest_folder = r'Z:\视频&照片\2014及以前'
 dest_folder = src_folder
 unsort_folder = r'Z:\视频&照片未整理'
@@ -145,7 +145,7 @@ def move_photo(file, file_path, total_file_count):
             if os.path.exists(file_path_no_ext + ext):
                 shutil.move(file_path_no_ext + ext, target_folder)
 
-        print(f"移动文件: {file_path} 到 {target_folder}")
+        print(f"移动文件: {file_path} 到 {target_folder} progress: {count/total_file_count*100:.2f}%")
     elif is_target:
         print(f"未找到日期信息 {file_path}")
 
