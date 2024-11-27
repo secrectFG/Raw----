@@ -3,27 +3,8 @@ import shutil
 import requests
 from bs4 import BeautifulSoup
 #日志
-import logging
-
-# 创建一个logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-
-# 创建一个handler，用于写入日志文件
-file_handler = logging.FileHandler('move-xmp-log.txt', encoding='utf-8')
-file_handler.setLevel(logging.INFO)
-
-# 创建一个handler，用于输出到控制台
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-
-# 设置日志格式
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-# 添加处理器
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
+import mylogger
+logger = mylogger.logger
 
 
 
@@ -40,7 +21,7 @@ def search_files(query):
         return None  # 出现错误时返回None
     
 def serarch_and_move(query):
-    print(f"正在搜索文件: {query}")
+    # print(f"正在搜索文件: {query}")
     # 示例使用
     results = search_files(query)
     # 解析HTML
@@ -93,6 +74,7 @@ def serarch_and_move(query):
                         filedir2 = f['path']
                         filedir = file['path']
                         if filedir == filedir2:
+                            print(f'pass {filename}')
                             continue
                         filepath = os.path.join(filedir, filename)
                         #移动xmp文件
@@ -104,14 +86,14 @@ def serarch_and_move(query):
                         
 
 def main():
-    serarch_and_move('_A7_0816')
-    # path = r"Z:\视频&照片\2018\2018-05-13"
-    # for root, dirs, files in os.walk(path):
-    #     for file in files:
-    #         if file.endswith('.xmp'):
-    #             # filedir = os.path.join(root, file)
-    #             filename = os.path.splitext(file)[0]
-    #             serarch_and_move(filename)
+    # serarch_and_move('_A7_0816')
+    path = r"Z:\视频&照片\2018\2018-05-13"
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith('.xmp'):
+                # filedir = os.path.join(root, file)
+                filename = os.path.splitext(file)[0]
+                serarch_and_move(filename)
 
 if __name__ == '__main__':
     main()

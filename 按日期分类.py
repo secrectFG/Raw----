@@ -3,14 +3,16 @@ import shutil
 import exifread
 from datetime import datetime
 import ffmpeg
-# import queue
-# import concurrent.futures
-# import time
+#日志
+import mylogger
+logger = mylogger.logger
 
-src_folder = r'Z:\视频&照片\2022'
-# dest_folder = r'Z:\视频&照片\2014及以前'
-dest_folder = src_folder
-unsort_folder = r'Z:\视频&照片未整理'
+src_folder = r'Z:\照片\2020'
+# dest_folder = src_folder
+
+dest_folder = r'Z:\照片\整理'
+
+unsort_folder = r'Z:\视频\未整理'
 
 def count_files_in_folder(folder_path):
     total_files = 0
@@ -87,7 +89,7 @@ def move_file_auto_rename(file_path, target_folder):
         
         # 移动并重命名文件
         shutil.move(file_path, new_file_path)
-        print(f"文件已存在，重命名并移动: {new_file_path}")
+        logger.warning(f"文件已存在，重命名并移动: {new_file_path}")
     else:
         # 如果文件不存在，直接移动
         shutil.move(file_path, target_path)
@@ -95,19 +97,19 @@ def move_file_auto_rename(file_path, target_folder):
 
 count = 0
 
-def move_photo(file, file_path, total_file_count):
+def move_photo(file2, file_path, total_file_count):
     date_taken = None
     is_target = False
     global count
     count += 1
 
     # 判断文件是否为照片
-    if file.lower().endswith(('.jpg', '.jpeg', '.cr2', '.nef', '.raw', '.arw', '.tif', '.rw2')):
+    if file2.lower().endswith(('.jpg', '.jpeg', '.cr2', '.nef', '.raw', '.arw', '.tif', '.rw2', '.dng', '.png')):
         date_taken = get_photo_date(file_path)
         is_target = True
     
     # 如果不是照片，判断是否为视频
-    elif file.lower().endswith(('.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv')):
+    elif file2.lower().endswith(('.mp4', '.mov', '.avi', '.mkv', '.flv', '.wmv')):
         date_taken = get_video_creation_date(file_path)
         is_target = True
 
@@ -132,22 +134,41 @@ def move_photo(file, file_path, total_file_count):
             return
             
 
-        file_path_no_ext = os.path.splitext(file_path)[0]
-
         filename = os.path.basename(file_path)
         filename_no_ext = os.path.splitext(filename)[0]
-        for ext in ['.xmp', '.tif', '.psd', '-编辑.tif', '-编辑.psd']:
-            targetfilename = filename_no_ext + ext
-            dest_file_path = os.path.join(unsort_folder, targetfilename)
-            if os.path.exists(dest_file_path):
-                print(f'move {dest_file_path} to {target_folder}')
-                shutil.move(dest_file_path, target_folder)
-            if os.path.exists(file_path_no_ext + ext):
-                shutil.move(file_path_no_ext + ext, target_folder)
+        filedir = os.path.dirname(file_path)
+        #walkdir
+        for root, dirs, files in os.walk(filedir):
+            for file2 in files:
+                if file2 == filename:
+                    continue
+                if filename_no_ext in file2:
+                    file_path2 = os.path.join(root, file2)
+                    move_file_auto_rename(file_path2, target_folder)
+                    count += 1
+
+
+                # for ext in ['.xmp', '.tif', '.psd', '-编辑.tif', '-编辑.psd']:
+                #     targetfilename = filename_no_ext + ext
+                #     dest_file_path = os.path.join(unsort_folder, targetfilename)
+                #     if os.path.exists(dest_file_path):
+        # for ext in ['.xmp', '.tif', '.psd', '-编辑.tif', '-编辑.psd']:
+        #     targetfilename = filename_no_ext + ext
+        #     dest_file_path = os.path.join(unsort_folder, targetfilename)
+        #     if os.path.exists(dest_file_path):
+        #         print(f'move {dest_file_path} to {target_folder}')
+        #         move_file_auto_rename(dest_file_path, target_folder)
+        #     if os.path.exists(file_path_no_ext + ext):
+        #         move_file_auto_rename(file_path_no_ext + ext, target_folder)
 
         print(f"移动文件: {file_path} 到 {target_folder} progress: {count/total_file_count*100:.2f}%")
     elif is_target:
         print(f"未找到日期信息 {file_path}")
+        #分类到无日期文件夹
+        target_folder = os.path.join(dest_folder, '无日期')
+        if not os.path.exists(target_folder):
+            os.makedirs(target_folder)
+        move_file_auto_rename(file_path, target_folder)
 
 
 def main():
