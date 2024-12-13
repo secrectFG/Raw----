@@ -8,9 +8,9 @@ import mylogger
 logger = mylogger.logger
 
 src_folder = r'Z:\照片\2020'
-# dest_folder = src_folder
+dest_folder = src_folder #只有在年份目录才能这样做，否则会很糟糕
 
-dest_folder = r'Z:\照片\整理'
+# dest_folder = r'Z:\照片\整理'
 
 unsort_folder = r'Z:\视频\未整理'
 
@@ -20,6 +20,21 @@ def count_files_in_folder(folder_path):
         total_files += len(files)  # 每次循环累加文件数
 
     return total_files
+
+is_debug = False
+
+old_move = shutil.move
+
+def shutil_move(src, dst):
+    try:
+        if is_debug:
+            print(f"移动文件: {src} -> {dst}")
+        else:
+            old_move(src, dst)
+    except Exception as e:
+        logger.error(f"移动文件失败: {src} -> {dst}, 错误: {e}")
+
+shutil.move = shutil_move
 
 def get_photo_date(photo_path):
     """读取照片的拍摄日期（如果有EXIF信息）"""
@@ -135,17 +150,17 @@ def move_photo(file2, file_path, total_file_count):
             
 
         filename = os.path.basename(file_path)
-        filename_no_ext = os.path.splitext(filename)[0]
+        filename_no_ext,ext = os.path.splitext(filename)
         filedir = os.path.dirname(file_path)
         #walkdir
         for root, dirs, files in os.walk(filedir):
             for file2 in files:
                 if file2 == filename:
                     continue
-                if filename_no_ext in file2:
+                if filename_no_ext in file2 and not file2.endswith(('.nef', '.cr2', '.arw', '.raw', '.rw2',)):
                     file_path2 = os.path.join(root, file2)
                     move_file_auto_rename(file_path2, target_folder)
-                    count += 1
+                    # count += 1
 
 
                 # for ext in ['.xmp', '.tif', '.psd', '-编辑.tif', '-编辑.psd']:

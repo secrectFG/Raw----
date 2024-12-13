@@ -16,6 +16,6 @@ def remove_empty_folders(path):
 # 调用函数删除空文件夹
 
 # input_folader = input("请输入文件夹路径：")
-input_folader = r"H:\转码"
+input_folader = r"I:\download"
 
 remove_empty_folders(input_folader)

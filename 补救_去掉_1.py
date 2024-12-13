@@ -3,14 +3,15 @@
 import os
 
 
-target_folder = r'Z:\照片\2018\2018-05-13\2018-05-13'
+target_folder = r'Z:\照片\2020\2020-01-29'
 
 for file in os.listdir(target_folder):
-    if file.lower().endswith('.png'):
+    target_ext = '.jpg'
+    if file.lower().endswith(target_ext):
         
         file_path = os.path.join(target_folder, file)
         file_name, file_ext = os.path.splitext(file)
-        if ".tif" in file:
+        if (".tif"+target_ext) in file:
             file_path = os.path.join(target_folder, file)
             try:
                 os.rename(file_path, file_path.replace(".tif", ""))
